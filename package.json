@@ -27,7 +27,7 @@
     "node": ">=6.9.5",
     "npm": ">=4.0.0",
     "yarn": ">=0.27.5 <2.0.0"
-  },  
+  },
   "lint-staged": {
     "*.ts": [
       "yarn prettier",
@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@angular/animations": "^4.2.0",
-    "@angular/cli": "^1.2.0",
+    "@angular/cli": "~1.2.0",
     "@angular/common": "^4.2.0",
     "@angular/compiler": "^4.2.0",
     "@angular/compiler-cli": "^4.2.0",
