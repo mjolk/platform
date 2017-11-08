@@ -196,6 +196,43 @@ export function createSelector<
     s9: S9
   ) => Result
 ): MemoizedSelector<State, Result>;
+export function createSelector<
+  State,
+  S1,
+  S2,
+  S3,
+  S4,
+  S5,
+  S6,
+  S7,
+  S8,
+  S9,
+  S10,
+  Result
+>(
+  s1: Selector<State, S1>,
+  s2: Selector<State, S2>,
+  s3: Selector<State, S3>,
+  s4: Selector<State, S4>,
+  s5: Selector<State, S5>,
+  s6: Selector<State, S6>,
+  s7: Selector<State, S7>,
+  s8: Selector<State, S8>,
+  s9: Selector<State, S9>,
+  s10: Selector<State, S10>,
+  projector: (
+    s1: S1,
+    s2: S2,
+    s3: S3,
+    s4: S4,
+    s5: S5,
+    s6: S6,
+    s7: S7,
+    s8: S8,
+    s9: S9,
+    s10: S10
+  ) => Result
+): MemoizedSelector<State, Result>;
 export function createSelector<State, S1, S2, S3, S4, S5, S6, S7, S8, Result>(
   selectors: [
     Selector<State, S1>,
