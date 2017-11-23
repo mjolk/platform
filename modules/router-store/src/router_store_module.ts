@@ -86,7 +86,7 @@ export type RouterErrorAction<T, V = RouterStateSnapshot> = {
  * An union type of router actions.
  */
 export type RouterAction<T, V = RouterStateSnapshot> =
-  | RouterNavigationAction<T>
+  | RouterNavigationAction<V>
   | RouterCancelAction<T, V>
   | RouterErrorAction<T, V>;
 
@@ -97,7 +97,7 @@ export type RouterReducerState<T = RouterStateSnapshot> = {
 
 export function routerReducer<T = RouterStateSnapshot>(
   state: RouterReducerState<T>,
-  action: RouterAction<any>
+  action: RouterAction<any, T>
 ): RouterReducerState<T> {
   switch (action.type) {
     case ROUTER_NAVIGATION:
@@ -112,9 +112,9 @@ export function routerReducer<T = RouterStateSnapshot>(
   }
 }
 
-export type StoreRouterConfig = {
+export interface StoreRouterConfig {
   stateKey?: string;
-};
+}
 
 export const _ROUTER_CONFIG = new InjectionToken(
   '@ngrx/router-store Internal Configuration'
@@ -124,11 +124,15 @@ export const ROUTER_CONFIG = new InjectionToken(
 );
 export const DEFAULT_ROUTER_FEATURENAME = 'routerReducer';
 
-export function _createDefaultRouterConfig(config: any): StoreRouterConfig {
-  let _config = {};
+export function _createDefaultRouterConfig(
+  config: StoreRouterConfig | StoreRouterConfigFunction
+): StoreRouterConfig {
+  let _config: StoreRouterConfig;
 
   if (typeof config === 'function') {
     _config = config();
+  } else {
+    _config = config || {};
   }
 
   return {
@@ -221,7 +225,6 @@ export class StoreRouterConnectingModule {
 
   private dispatchTriggeredByRouter: boolean = false; // used only in dev mode in combination with routerReducer
   private navigationTriggeredByDispatch: boolean = false; // used only in dev mode in combination with routerReducer
-
   private stateKey: string;
 
   constructor(

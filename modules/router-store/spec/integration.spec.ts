@@ -44,7 +44,6 @@ describe('integration spec', () => {
           { type: 'router', event: 'NavigationStart', url: '/' },
           { type: 'router', event: 'RoutesRecognized', url: '/' },
           { type: 'store', state: '/' }, // ROUTER_NAVIGATION event in the store
-
           /* new Router Lifecycle in Angular 4.3 */
           { type: 'router', event: 'GuardsCheckStart', url: '/' },
           { type: 'router', event: 'GuardsCheckEnd', url: '/' },
@@ -162,7 +161,6 @@ describe('integration spec', () => {
           { type: 'router', event: 'GuardsCheckEnd', url: '/next' },
           // { type: 'router', event: 'ResolveStart', url: '/next' },
           // { type: 'router', event: 'ResolveEnd', url: '/next' },
-
           {
             type: 'store',
             state: {
@@ -451,7 +449,6 @@ describe('integration spec', () => {
           { type: 'router', event: 'NavigationStart', url: '/next' },
           { type: 'router', event: 'RoutesRecognized', url: '/next' },
           { type: 'store', state: undefined }, // after ROUTER_NAVIGATION
-
           /* new Router Lifecycle in Angular 4.3 */
           { type: 'router', event: 'GuardsCheckStart', url: '/next' },
           { type: 'store', state: undefined }, // after USER_EVENT
@@ -584,13 +581,15 @@ function waitForNavigation(router: Router): Promise<any> {
 
 function logOfRouterAndStore(router: Router, store: Store<any>): any[] {
   const log: any[] = [];
-  router.events.subscribe(e =>
-    log.push({
-      type: 'router',
-      event: e.constructor.name,
-      url: (<any>e).url.toString(),
-    })
-  );
+  router.events.subscribe(e => {
+    if (e.hasOwnProperty('url')) {
+      log.push({
+        type: 'router',
+        event: e.constructor.name,
+        url: (<any>e).url.toString(),
+      });
+    }
+  });
   store.subscribe(store => log.push({ type: 'store', state: store.reducer }));
   return log;
 }
