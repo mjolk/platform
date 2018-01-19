@@ -1,3 +1,7 @@
+---
+# [Click here for documentation for the latest release (4.1.1)](https://github.com/ngrx/platform/blob/v4.1.1/docs/store-devtools/README.md)
+---
+
 # @ngrx/store-devtools
 
 Devtools for [@ngrx/store](../store/README.md).
@@ -7,11 +11,9 @@ Install @ngrx/store-devtools from npm:
 
 `npm install @ngrx/store-devtools --save` OR `yarn add @ngrx/store-devtools`
 
-
 ### Nightly builds
 
 `npm install github:ngrx/store-devtools-builds` OR `yarn add github:ngrx/store-devtools-builds`
-
 
 ## Instrumentation
 ### Instrumentation with the Chrome / Firefox Extension
@@ -22,24 +24,29 @@ Install @ngrx/store-devtools from npm:
 
 ```ts
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { environment } from '../environments/environment'; // Angular CLI environemnt
 
 @NgModule({
   imports: [
     StoreModule.forRoot(reducers),
-    // Note that you must instrument after importing StoreModule (config is optional)
+    // Instrumentation must be imported after importing StoreModule (config is optional)
     StoreDevtoolsModule.instrument({
-      maxAge: 25 //  Retains last 25 states
+      maxAge: 25, // Retains last 25 states
+      logOnly: environment.production // Restrict extension to log-only mode
     })
   ]
 })
 export class AppModule { }
 ```
 
-### Available options
+### Instrumentation options
 When you call the instrumentation, you can give an optional configuration object:
 
 #### `maxAge`
 number (>1) | false - maximum allowed actions to be stored in the history tree. The oldest actions are removed once maxAge is reached. It's critical for performance. Default is `false` (infinite).
+
+#### `logOnly`
+boolean - connect to the Devtools Extension in log-only mode. Default is `false` which enables all extension [features](https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md#features).
 
 #### `name`
 string - the instance name to be showed on the monitor page. Default value is _NgRx Store DevTools_.

@@ -1,3 +1,7 @@
+---
+# [Click here for documentation for the latest release (4.1.1)](https://github.com/ngrx/platform/blob/v4.1.1/docs/entity/README.md)
+---
+
 # @ngrx/entity
 
 Entity State adapter for managing record collections.
@@ -12,7 +16,6 @@ Entity State adapter for managing record collections.
 Install @ngrx/entity from npm:
 
 `npm install @ngrx/entity --save` OR `yarn add @ngrx/entity`
-
 
 ### Nightly builds
 
