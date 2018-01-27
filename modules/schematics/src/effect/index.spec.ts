@@ -22,6 +22,7 @@ describe('Effect Schematic', () => {
     flat: false,
     feature: false,
     root: false,
+    group: false,
   };
 
   let appTree: Tree;
@@ -172,5 +173,37 @@ describe('Effect Schematic', () => {
     const content = getFileContent(tree, '/src/app/store.module.ts');
 
     expect(content).not.toMatch(/EffectsModule\.forRoot\(\[FooEffects\]\)/);
+  });
+
+  it('should group within an "effects" folder if group is set', () => {
+    const options = { ...defaultOptions, flat: true, spec: false, group: true };
+
+    const tree = schematicRunner.runSchematic('effect', options, appTree);
+    const files = tree.files;
+    expect(
+      files.indexOf('/src/app/effects/foo.effects.ts')
+    ).toBeGreaterThanOrEqual(0);
+  });
+
+  it('should group and nest the effect within a feature', () => {
+    const options = {
+      ...defaultOptions,
+      spec: false,
+      group: true,
+      flat: false,
+      feature: true,
+    };
+
+    const tree = schematicRunner.runSchematic('effect', options, appTree);
+    const files = tree.files;
+    expect(
+      files.indexOf('/src/app/effects/foo/foo.effects.ts')
+    ).toBeGreaterThanOrEqual(0);
+
+    const content = getFileContent(tree, '/src/app/effects/foo/foo.effects.ts');
+
+    expect(content).toMatch(
+      /import\ \{\ FooActions,\ FooActionTypes\ }\ from\ \'\.\.\/\.\.\/actions\/foo\/foo\.actions';/
+    );
   });
 });

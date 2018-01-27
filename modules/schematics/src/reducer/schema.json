@@ -42,6 +42,12 @@
       "type": "string",
       "description": "Specifies the reducers file.",
       "aliases": ["r"]
+    },
+    "group": {
+      "type": "boolean",
+      "default": false,
+      "description": "Group reducer file within 'reducers' folder",
+      "aliases": ["g"]
     }
   },
   "required": [

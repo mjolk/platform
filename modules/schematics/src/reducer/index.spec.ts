@@ -89,4 +89,38 @@ describe('Reducer Schematic', () => {
 
     expect(reducers).toMatch(/foo\: fromFoo.reducer/);
   });
+
+  it('should group within a "reducers" folder if group is set', () => {
+    const tree = schematicRunner.runSchematic('reducer', {
+      ...defaultOptions,
+      group: true,
+    });
+    expect(tree.files.length).toEqual(1);
+    expect(tree.files[0]).toEqual('/src/app/reducers/foo.reducer.ts');
+  });
+
+  it('should group and nest the reducer within a feature', () => {
+    const options = {
+      ...defaultOptions,
+      spec: false,
+      group: true,
+      flat: false,
+      feature: true,
+    };
+
+    const tree = schematicRunner.runSchematic('reducer', options, appTree);
+    const files = tree.files;
+    expect(
+      files.indexOf('/src/app/reducers/foo/foo.reducer.ts')
+    ).toBeGreaterThanOrEqual(0);
+
+    const content = getFileContent(
+      tree,
+      '/src/app/reducers/foo/foo.reducer.ts'
+    );
+
+    expect(content).toMatch(
+      /import\ \{\ FooActions,\ FooActionTypes\ }\ from\ \'\.\.\/\.\.\/actions\/foo\/foo\.actions';/
+    );
+  });
 });
