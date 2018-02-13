@@ -1,4 +1,4 @@
-import { EntityStateAdapter, EntityState } from '../src/models';
+import { EntityStateAdapter, EntityState, Update } from '../src/models';
 import { createEntityAdapter } from '../src/create_adapter';
 import {
   BookModel,
@@ -10,6 +10,20 @@ import {
 describe('Sorted State Adapter', () => {
   let adapter: EntityStateAdapter<BookModel>;
   let state: EntityState<BookModel>;
+
+  beforeAll(() => {
+    Object.defineProperty(Array.prototype, 'unwantedField', {
+      enumerable: true,
+      configurable: true,
+      value: 'This should not appear anywhere',
+    });
+  });
+
+  afterAll(() => {
+    Object.defineProperty(Array.prototype, 'unwantedField', {
+      value: undefined,
+    });
+  });
 
   beforeEach(() => {
     adapter = createEntityAdapter({
@@ -264,6 +278,74 @@ describe('Sorted State Adapter', () => {
     );
 
     expect(withUpdates).toEqual({
+      ids: [AClockworkOrange.id, TheGreatGatsby.id],
+      entities: {
+        [TheGreatGatsby.id]: {
+          ...TheGreatGatsby,
+          ...firstChange,
+        },
+        [AClockworkOrange.id]: {
+          ...AClockworkOrange,
+          ...secondChange,
+        },
+      },
+    });
+  });
+
+  it('should let you add one entity to the state with upsert()', () => {
+    const withOneEntity = adapter.upsertOne(
+      {
+        id: TheGreatGatsby.id,
+        changes: TheGreatGatsby,
+      },
+      state
+    );
+
+    expect(withOneEntity).toEqual({
+      ids: [TheGreatGatsby.id],
+      entities: {
+        [TheGreatGatsby.id]: TheGreatGatsby,
+      },
+    });
+  });
+
+  it('should let you update an entity in the state with upsert()', () => {
+    const withOne = adapter.addOne(TheGreatGatsby, state);
+    const changes = { title: 'A New Hope' };
+
+    const withUpdates = adapter.upsertOne(
+      {
+        id: TheGreatGatsby.id,
+        changes,
+      },
+      withOne
+    );
+
+    expect(withUpdates).toEqual({
+      ids: [TheGreatGatsby.id],
+      entities: {
+        [TheGreatGatsby.id]: {
+          ...TheGreatGatsby,
+          ...changes,
+        },
+      },
+    });
+  });
+
+  it('should let you upsert many entities in the state', () => {
+    const firstChange = { title: 'Zack' };
+    const secondChange = { title: 'Aaron' };
+    const withMany = adapter.addAll([TheGreatGatsby], state);
+
+    const withUpserts = adapter.upsertMany(
+      [
+        { id: TheGreatGatsby.id, changes: firstChange },
+        { id: AClockworkOrange.id, changes: secondChange },
+      ],
+      withMany
+    );
+
+    expect(withUpserts).toEqual({
       ids: [AClockworkOrange.id, TheGreatGatsby.id],
       entities: {
         [TheGreatGatsby.id]: {

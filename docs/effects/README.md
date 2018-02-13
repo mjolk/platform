@@ -53,7 +53,7 @@ export class AuthEffects {
     mergeMap(action =>
       this.http.post('/auth', action.payload).pipe(
         // If successful, dispatch success action with result
-        map(data => ({ type: 'LOGIN_SUCCESS', payload: data }))
+        map(data => ({ type: 'LOGIN_SUCCESS', payload: data })),
         // If request fails, dispatch failed action
         catchError(() => of({ type: 'LOGIN_FAILED' }))
       )
@@ -103,5 +103,6 @@ export class AdminModule {}
 - [Controlling Effects](./api.md#controlling-effects)
 - [Filtering Actions](./api.md#oftype)
 - [Non-dispatching effects](./api.md#non-dispatching-effects)
+- [Initializing effect](./api.md#initializing-effect)
 - [Utilities](./api.md#utilities)
 - [Testing](./testing.md)

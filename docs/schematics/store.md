@@ -3,7 +3,7 @@
 
 ## Overview
 
-Generates the intial setup for state management and registering new feature states. It registers the `@ngrx/store-devtools` integration and generates a state management file containing the state interface, the object map of action reducers and any associated meta-reducers.
+Generates the initial setup for state management and registering new feature states. It registers the `@ngrx/store-devtools` integration and generates a state management file containing the state interface, the object map of action reducers and any associated meta-reducers.
 
 ## Command
 
@@ -49,7 +49,7 @@ Generate an `Admin` feature state within the `admin` folder and register it with
 
 ```sh
 ng generate module admin --flat false
-ng generate store admin/Admin -m admin.module.ts
+ng generate store Admin -m admin/admin.module.ts
 ```
 
 Generate the initial state management files within a `store` folder and register it within the `app.module.ts`
