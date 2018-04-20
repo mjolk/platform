@@ -5,18 +5,14 @@
   "type": "object",
   "properties": {
     "name": {
+      "description": "The name of the state.",
       "type": "string"
     },
     "path": {
       "type": "string",
-      "default": "app"
-    },
-    "appRoot": {
-      "type": "string"
-    },
-    "sourceDir": {
-      "type": "string",
-      "default": "src"
+      "format": "path",
+      "description": "The path to create the component.",
+      "visible": false
     },
     "flat": {
       "type": "boolean",
@@ -43,9 +39,13 @@
       "type": "boolean",
       "default": false,
       "description": "Flag to setup the root state or feature state."
+    },
+    "stateInterface": {
+      "type": "string",
+      "default": "State",
+      "description": "Specifies the interface for the state.",
+      "alias": "si"
     }
   },
-  "required": [
-    "name"
-  ]
+  "required": ["name"]
 }
