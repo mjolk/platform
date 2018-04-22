@@ -1,20 +1,21 @@
-import { Injectable, NgModule } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { NgModule, Injectable } from '@angular/core';
 import {
+  StoreModule,
+  Store,
   Action,
   createFeatureSelector,
   createSelector,
   select,
-  Store,
-  StoreModule,
 } from '@ngrx/store';
-import { Observable } from 'rxjs';
-import { map, withLatestFrom } from 'rxjs/operators';
-
-import { Actions, Effect, EffectsModule } from '../';
+import { tap, withLatestFrom, map, mergeMap, filter } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import { cold } from 'jasmine-marbles';
+import { EffectSources } from '../src/effect_sources';
+import { FEATURE_EFFECTS } from '../src/tokens';
 import { EffectsFeatureModule } from '../src/effects_feature_module';
 import { EffectsRootModule } from '../src/effects_root_module';
-import { FEATURE_EFFECTS } from '../src/tokens';
+import { EffectsModule, Effect, Actions, ofType } from '../';
 
 describe('Effects Feature Module', () => {
   describe('when registered', () => {
@@ -67,7 +68,9 @@ describe('Effects Feature Module', () => {
       store = TestBed.get(Store);
     });
 
-    it('should have the feature state defined to select from the effect', (done: any) => {
+    it('should have the feature state defined to select from the effect', (
+      done: any
+    ) => {
       const action = { type: 'INCREMENT' };
       const result = { type: 'INCREASE' };
 

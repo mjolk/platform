@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { ActivatedRouteSnapshot, CanActivate, Router } from '@angular/router';
-import { select, Store } from '@ngrx/store';
-import { Observable, of } from 'rxjs';
-import { catchError, filter, map, switchMap, take, tap } from 'rxjs/operators';
+import { Store, select } from '@ngrx/store';
+import { Router, CanActivate, ActivatedRouteSnapshot } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import { filter, take, map, tap, catchError, switchMap } from 'rxjs/operators';
+import { of } from 'rxjs/observable/of';
 
 import { GoogleBooksService } from '../../core/services/google-books';
-import * as BookActions from '../actions/book';
 import * as fromBooks from '../reducers';
+import * as book from '../actions/book';
 
 /**
  * Guards are hooks into the route resolution process, providing an opportunity
@@ -52,8 +53,8 @@ export class BookExistsGuard implements CanActivate {
    */
   hasBookInApi(id: string): Observable<boolean> {
     return this.googleBooks.retrieveBook(id).pipe(
-      map(bookEntity => new BookActions.Load(bookEntity)),
-      tap((action: BookActions.Load) => this.store.dispatch(action)),
+      map(bookEntity => new book.Load(bookEntity)),
+      tap((action: book.Load) => this.store.dispatch(action)),
       map(book => !!book),
       catchError(() => {
         this.router.navigate(['/404']);

@@ -10,15 +10,15 @@ import { Authenticate } from '../models/user';
       <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="submit()">
           <p>
-            <mat-form-field>
+            <mat-input-container>
               <input type="text" matInput placeholder="Username" formControlName="username">
-            </mat-form-field>
+            </mat-input-container>
           </p>
 
           <p>
-            <mat-form-field>
+            <mat-input-container>
               <input type="password" matInput placeholder="Password" formControlName="password">
-            </mat-form-field>
+            </mat-input-container>
           </p>
 
           <p *ngIf="errorMessage" class="loginError">

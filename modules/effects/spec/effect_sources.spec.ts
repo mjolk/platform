@@ -1,9 +1,15 @@
-import { ErrorHandler } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import 'rxjs/add/operator/concat';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/map';
 import { cold, getTestScheduler } from 'jasmine-marbles';
-import { concat, empty, NEVER, Observable, of, throwError, timer } from 'rxjs';
-import { map } from 'rxjs/operators';
-
+import { Observable } from 'rxjs/Observable';
+import { of } from 'rxjs/observable/of';
+import { timer } from 'rxjs/observable/timer';
+import { _throw } from 'rxjs/observable/throw';
+import { never } from 'rxjs/observable/never';
+import { empty } from 'rxjs/observable/empty';
+import { TestBed } from '@angular/core/testing';
+import { ErrorHandler } from '@angular/core';
 import { Effect, EffectSources } from '../';
 
 describe('EffectSources', () => {
@@ -54,13 +60,12 @@ describe('EffectSources', () => {
     }
 
     class SourceE {
-      @Effect() e$ = throwError(error);
+      @Effect() e$ = _throw(error);
     }
 
     class SourceG {
       @Effect() empty = of('value');
-      @Effect()
-      never = timer(50, getTestScheduler() as any).pipe(map(() => 'update'));
+      @Effect() never = timer(50, getTestScheduler()).map(() => 'update');
     }
 
     it('should resolve effects from instances', () => {
@@ -111,6 +116,6 @@ describe('EffectSources', () => {
   });
 
   function alwaysOf<T>(value: T) {
-    return concat(of(value), NEVER);
+    return of(value).concat(never<T>());
   }
 });

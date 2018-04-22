@@ -10,30 +10,30 @@ import {
   filter,
   mergeWith,
   move,
+  noop,
   template,
   url,
 } from '@angular-devkit/schematics';
+import 'rxjs/add/operator/merge';
 import * as ts from 'typescript';
 import * as stringUtils from '../strings';
-import { addImportToModule } from '../utility/ast-utils';
+import { addProviderToModule, addImportToModule } from '../utility/ast-utils';
 import { InsertChange, Change } from '../utility/change';
 import {
   buildRelativePath,
   findModuleFromOptions,
 } from '../utility/find-module';
-import { Schema as StoreOptions } from './schema';
+import { Schema as ServiceOptions } from './schema';
 import { insertImport } from '../utility/route-utils';
-import { getProjectPath } from '../utility/project';
 
-function addImportToNgModule(options: StoreOptions): Rule {
+function addImportToNgModule(options: ServiceOptions): Rule {
   return (host: Tree) => {
-    const modulePath = options.module;
-
-    if (!modulePath) {
+    if (!options.module) {
       return host;
     }
 
-    if (!host.exists(modulePath)) {
+    const modulePath = options.module;
+    if (!host.exists(options.module)) {
       throw new Error('Specified module does not exist');
     }
 
@@ -50,11 +50,13 @@ function addImportToNgModule(options: StoreOptions): Rule {
       true
     );
 
-    const statePath = `${options.path}/${options.statePath}`;
+    const statePath = `/${options.sourceDir}/${options.path}/${
+      options.statePath
+    }`;
     const relativePath = buildRelativePath(modulePath, statePath);
     const environmentsPath = buildRelativePath(
       statePath,
-      `/${options.path}/environments/environment`
+      `/${options.sourceDir}/environments/environment`
     );
 
     const storeNgModuleImport = addImportToModule(
@@ -125,26 +127,23 @@ function addImportToNgModule(options: StoreOptions): Rule {
   };
 }
 
-export default function(options: StoreOptions): Rule {
+export default function(options: ServiceOptions): Rule {
+  options.path = options.path ? normalize(options.path) : options.path;
+  const sourceDir = options.sourceDir;
+  const statePath = `/${options.sourceDir}/${options.path}/${
+    options.statePath
+  }/index.ts`;
+  const environmentsPath = buildRelativePath(
+    statePath,
+    `/${options.sourceDir}/environments/environment`
+  );
+  if (!sourceDir) {
+    throw new SchematicsException(`sourceDir option is required.`);
+  }
+
   return (host: Tree, context: SchematicContext) => {
-    options.path = getProjectPath(host, options);
-
-    const statePath = `/${options.path}/${options.statePath}/index.ts`;
-    const environmentsPath = buildRelativePath(
-      statePath,
-      `/${options.path}/environments/environment`
-    );
-
     if (options.module) {
       options.module = findModuleFromOptions(host, options);
-    }
-
-    if (
-      options.root &&
-      options.stateInterface &&
-      options.stateInterface !== 'State'
-    ) {
-      options.stateInterface = stringUtils.classify(options.stateInterface);
     }
 
     const templateSource = apply(url('./files'), [
@@ -152,7 +151,8 @@ export default function(options: StoreOptions): Rule {
         ...stringUtils,
         ...(options as object),
         environmentsPath,
-      } as any),
+      }),
+      move(sourceDir),
     ]);
 
     return chain([

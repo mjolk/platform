@@ -6,9 +6,10 @@
       "@ngrx/effects": ["../../dist/packages/effects"]
     }
   },
-  "files": ["index.ts"],
+  "files": [
+    "index.ts"
+  ],
   "angularCompilerOptions": {
-    // Work around for issue: https://github.com/angular/angular/issues/22210
-    "strictMetadataEmit": false
+    "strictMetadataEmit": true
   }
 }

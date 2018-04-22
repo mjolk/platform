@@ -29,8 +29,6 @@ export function createEntityAdapter<T>(
     : createUnsortedStateAdapter(selectId);
 
   return {
-    selectId,
-    sortComparer,
     ...stateFactory,
     ...selectorsFactory,
     ...stateAdapter,

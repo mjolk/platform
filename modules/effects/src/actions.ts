@@ -1,7 +1,9 @@
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { Action, ScannedActionsSubject } from '@ngrx/store';
-import { Observable, Operator, OperatorFunction } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { Operator } from 'rxjs/Operator';
 import { filter } from 'rxjs/operators';
+import { OperatorFunction } from 'rxjs/interfaces';
 
 @Injectable()
 export class Actions<V = Action> extends Observable<V> {
@@ -25,9 +27,7 @@ export class Actions<V = Action> extends Observable<V> {
   }
 }
 
-export function ofType<T extends Action>(
-  ...allowedTypes: string[]
-): OperatorFunction<Action, T> {
+export function ofType<T extends Action>(...allowedTypes: string[]) {
   return filter((action: Action): action is T =>
     allowedTypes.some(type => type === action.type)
   );

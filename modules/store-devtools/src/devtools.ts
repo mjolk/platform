@@ -1,27 +1,38 @@
-import { Injectable, Inject, OnDestroy, ErrorHandler } from '@angular/core';
+import { Injectable, Inject, OnDestroy } from '@angular/core';
 import {
+  State,
   Action,
-  ActionReducer,
-  ActionsSubject,
   INITIAL_STATE,
   ReducerObservable,
+  ActionsSubject,
   ScannedActionsSubject,
 } from '@ngrx/store';
-import {
-  merge,
-  Observable,
-  Observer,
-  queueScheduler,
-  ReplaySubject,
-  Subscription,
-} from 'rxjs';
-import { map, observeOn, scan, skip, withLatestFrom } from 'rxjs/operators';
+import { Observable } from 'rxjs/Observable';
+import { ReplaySubject } from 'rxjs/ReplaySubject';
+import { Observer } from 'rxjs/Observer';
+import { Subscription } from 'rxjs/Subscription';
+import { map } from 'rxjs/operator/map';
+import { merge } from 'rxjs/operator/merge';
+import { observeOn } from 'rxjs/operator/observeOn';
+import { scan } from 'rxjs/operator/scan';
+import { skip } from 'rxjs/operator/skip';
+import { withLatestFrom } from 'rxjs/operator/withLatestFrom';
+import { queue } from 'rxjs/scheduler/queue';
 
-import * as Actions from './actions';
-import { STORE_DEVTOOLS_CONFIG, StoreDevtoolsConfig } from './config';
 import { DevtoolsExtension } from './extension';
-import { LiftedState, liftInitialState, liftReducerWith } from './reducer';
-import { liftAction, unliftState } from './utils';
+import { liftAction, unliftAction, unliftState, applyOperators } from './utils';
+import {
+  liftReducerWith,
+  liftInitialState,
+  LiftedState,
+  ComputedState,
+} from './reducer';
+import * as Actions from './actions';
+import {
+  StoreDevtoolsConfig,
+  STORE_DEVTOOLS_CONFIG,
+  StateSanitizer,
+} from './config';
 
 @Injectable()
 export class DevtoolsDispatcher extends ActionsSubject {}
@@ -39,7 +50,6 @@ export class StoreDevtools implements Observer<any> {
     reducers$: ReducerObservable,
     extension: DevtoolsExtension,
     scannedActions: ScannedActionsSubject,
-    errorHandler: ErrorHandler,
     @Inject(INITIAL_STATE) initialState: any,
     @Inject(STORE_DEVTOOLS_CONFIG) config: StoreDevtoolsConfig
   ) {
@@ -47,63 +57,77 @@ export class StoreDevtools implements Observer<any> {
     const liftReducer = liftReducerWith(
       initialState,
       liftedInitialState,
-      errorHandler,
       config.monitor,
       config
     );
 
-    const liftedAction$ = merge(
-      merge(actions$.asObservable().pipe(skip(1)), extension.actions$).pipe(
-        map(liftAction)
-      ),
-      dispatcher,
-      extension.liftedActions$
-    ).pipe(observeOn(queueScheduler));
+    const liftedAction$ = applyOperators(actions$.asObservable(), [
+      [skip, 1],
+      [merge, extension.actions$],
+      [map, liftAction],
+      [merge, dispatcher, extension.liftedActions$],
+      [observeOn, queue],
+    ]);
 
-    const liftedReducer$ = reducers$.pipe(map(liftReducer));
+    const liftedReducer$ = map.call(reducers$, liftReducer);
 
     const liftedStateSubject = new ReplaySubject<LiftedState>(1);
+    const liftedStateSubscription = applyOperators(liftedAction$, [
+      [withLatestFrom, liftedReducer$],
+      [
+        scan,
+        ({ state: liftedState }: any, [action, reducer]: any) => {
+          const reducedLiftedState = reducer(liftedState, action);
 
-    const liftedStateSubscription = liftedAction$
-      .pipe(
-        withLatestFrom(liftedReducer$),
-        scan<
-          [any, ActionReducer<LiftedState, Actions.All>],
-          {
-            state: LiftedState;
-            action: any;
-          }
-        >(
-          ({ state: liftedState }, [action, reducer]) => {
-            const reducedLiftedState = reducer(liftedState, action);
+          // Extension should be sent the sanitized lifted state
+          extension.notify(
+            action,
+            this.getSanitizedState(reducedLiftedState, config.stateSanitizer)
+          );
 
-            // // Extension should be sent the sanitized lifted state
-            extension.notify(action, reducedLiftedState);
+          return { state: reducedLiftedState, action };
+        },
+        { state: liftedInitialState, action: null },
+      ],
+    ]).subscribe(({ state, action }) => {
+      liftedStateSubject.next(state);
 
-            return { state: reducedLiftedState, action };
-          },
-          { state: liftedInitialState, action: null as any }
-        )
-      )
-      .subscribe(({ state, action }) => {
-        liftedStateSubject.next(state);
+      if (action.type === Actions.PERFORM_ACTION) {
+        const unliftedAction = (action as Actions.PerformAction).action;
 
-        if (action.type === Actions.PERFORM_ACTION) {
-          const unliftedAction = (action as Actions.PerformAction).action;
-
-          scannedActions.next(unliftedAction);
-        }
-      });
+        scannedActions.next(unliftedAction);
+      }
+    });
 
     const liftedState$ = liftedStateSubject.asObservable() as Observable<
       LiftedState
     >;
-    const state$ = liftedState$.pipe(map(unliftState));
+    const state$ = map.call(liftedState$, unliftState);
 
     this.stateSubscription = liftedStateSubscription;
     this.dispatcher = dispatcher;
     this.liftedState = liftedState$;
     this.state = state$;
+  }
+
+  /**
+   * Restructures the lifted state passed in to prepare for sending to the
+   * Redux Devtools Extension
+   */
+  getSanitizedState(state: LiftedState, stateSanitizer?: StateSanitizer) {
+    const sanitizedComputedStates = stateSanitizer
+      ? state.computedStates.map((entry: ComputedState) => ({
+          state: entry.sanitizedState,
+          error: entry.error,
+        }))
+      : state.computedStates;
+
+    // Replace action and state logs with their sanitized versions
+    return {
+      ...state,
+      actionsById: state.sanitizedActionsById,
+      computedStates: sanitizedComputedStates,
+    };
   }
 
   dispatch(action: Action) {
@@ -119,19 +143,19 @@ export class StoreDevtools implements Observer<any> {
   complete() {}
 
   performAction(action: any) {
-    this.dispatch(new Actions.PerformAction(action, +Date.now()));
+    this.dispatch(new Actions.PerformAction(action));
   }
 
   reset() {
-    this.dispatch(new Actions.Reset(+Date.now()));
+    this.dispatch(new Actions.Reset());
   }
 
   rollback() {
-    this.dispatch(new Actions.Rollback(+Date.now()));
+    this.dispatch(new Actions.Rollback());
   }
 
   commit() {
-    this.dispatch(new Actions.Commit(+Date.now()));
+    this.dispatch(new Actions.Commit());
   }
 
   sweep() {

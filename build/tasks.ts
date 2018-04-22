@@ -41,7 +41,9 @@ async function _compilePackagesWithNgc(pkg: string) {
     : [pkg, 'index'];
 
   const entryTypeDefinition = `export * from './${exportPath}/${moduleName}';`;
-  const entryMetadata = `{"__symbolic":"module","version":3,"metadata":{},"exports":[{"from":"./${pkg}/index"}]}`;
+  const entryMetadata = `{"__symbolic":"module","version":3,"metadata":{},"exports":[{"from":"./${
+    pkg
+  }/index"}]}`;
 
   await Promise.all([
     util.writeFile(`./dist/packages/${pkg}.d.ts`, entryTypeDefinition),
@@ -114,11 +116,7 @@ export async function createUmdBundles(config: Config) {
 
     const destinationName = util.getDestinationName(pkg);
 
-    const rollupArgs = [
-      `-c ./modules/${pkg}/rollup.config.js`,
-      `--sourcemap`,
-      `--amd.id ${config.scope}/${pkg}`,
-    ];
+    const rollupArgs = [`-c ./modules/${pkg}/rollup.config.js`, `--sourcemap`];
 
     await util.exec('rollup', rollupArgs);
     await util.mapSources(
@@ -239,7 +237,9 @@ export async function minifyUmdBundles(config: Config) {
       file,
       ...uglifyArgs,
       `-o ${out}`,
-      `--source-map "filename='${out}.map' includeSources='${file}', content='${file}.map'"`,
+      `--source-map "filename='${out}.map' includeSources='${file}', content='${
+        file
+      }.map'"`,
     ]);
   });
 }

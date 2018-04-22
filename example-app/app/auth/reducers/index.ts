@@ -1,8 +1,4 @@
-import {
-  createSelector,
-  createFeatureSelector,
-  ActionReducerMap,
-} from '@ngrx/store';
+import { createSelector, createFeatureSelector } from '@ngrx/store';
 import * as fromRoot from '../../reducers';
 import * as fromAuth from './auth';
 import * as fromLoginPage from './login-page';
@@ -16,7 +12,7 @@ export interface State extends fromRoot.State {
   auth: AuthState;
 }
 
-export const reducers: ActionReducerMap<AuthState> = {
+export const reducers = {
   status: fromAuth.reducer,
   loginPage: fromLoginPage.reducer,
 };

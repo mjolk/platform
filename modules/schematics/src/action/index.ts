@@ -11,34 +11,31 @@ import {
   noop,
   template,
   url,
-  Tree,
-  SchematicContext,
 } from '@angular-devkit/schematics';
 import * as stringUtils from '../strings';
 import { Schema as ActionOptions } from './schema';
-import { getProjectPath } from '../utility/project';
 
 export default function(options: ActionOptions): Rule {
-  return (host: Tree, context: SchematicContext) => {
-    options.path = getProjectPath(host, options);
+  options.path = options.path ? normalize(options.path) : options.path;
+  const sourceDir = options.sourceDir;
+  if (!sourceDir) {
+    throw new SchematicsException(`sourceDir option is required.`);
+  }
 
-    const templateSource = apply(url('./files'), [
-      options.spec ? noop() : filter(path => !path.endsWith('__spec.ts')),
-      template({
-        'if-flat': (s: string) =>
-          stringUtils.group(
-            options.flat ? '' : s,
-            options.group ? 'actions' : ''
-          ),
-        ...stringUtils,
-        ...(options as object),
-        dot: () => '.',
-      } as any),
-    ]);
+  const templateSource = apply(url('./files'), [
+    options.spec ? noop() : filter(path => !path.endsWith('__spec.ts')),
+    template({
+      'if-flat': (s: string) =>
+        stringUtils.group(
+          options.flat ? '' : s,
+          options.group ? 'actions' : ''
+        ),
+      ...stringUtils,
+      ...(options as object),
+      dot: () => '.',
+    }),
+    move(sourceDir),
+  ]);
 
-    return chain([branchAndMerge(chain([mergeWith(templateSource)]))])(
-      host,
-      context
-    );
-  };
+  return chain([branchAndMerge(chain([mergeWith(templateSource)]))]);
 }

@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Store, select } from '@ngrx/store';
 
-import * as AuthActions from '../../auth/actions/auth';
-import * as fromAuth from '../../auth/reducers';
 import * as fromRoot from '../../reducers';
-import * as LayoutActions from '../actions/layout';
+import * as fromAuth from '../../auth/reducers';
+import * as layout from '../actions/layout';
+import * as Auth from '../../auth/actions/auth';
 
 @Component({
   selector: 'bc-app',
@@ -54,16 +54,16 @@ export class AppComponent {
      * updates and user interaction through the life of our
      * application.
      */
-    this.store.dispatch(new LayoutActions.CloseSidenav());
+    this.store.dispatch(new layout.CloseSidenav());
   }
 
   openSidenav() {
-    this.store.dispatch(new LayoutActions.OpenSidenav());
+    this.store.dispatch(new layout.OpenSidenav());
   }
 
   logout() {
     this.closeSidenav();
 
-    this.store.dispatch(new AuthActions.Logout());
+    this.store.dispatch(new Auth.Logout());
   }
 }

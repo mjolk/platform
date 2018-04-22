@@ -11,7 +11,6 @@ ts_test_library(
         "//modules/store",
         "//modules/store-devtools",
         "@rxjs",
-        "@rxjs//operators",
     ],
 )
 
@@ -21,5 +20,6 @@ jasmine_node_test(
         ":test_lib",
         "//modules/store",
         "//modules/store-devtools",
+        "@rxjs",
     ],
 )

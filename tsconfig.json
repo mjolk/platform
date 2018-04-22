@@ -5,9 +5,11 @@
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
     "noStrictGenericChecks": true,
-    "lib": ["es2016", "dom"],
+    "lib": [
+      "es2016",
+      "dom"
+    ],
     "outDir": "../out-tsc/app",
     "target": "es5",
     "module": "commonjs",
@@ -15,12 +17,21 @@
     "rootDir": "./",
     "strict": true,
     "paths": {
-      "@ngrx/effects": ["./modules/effects"],
-      "@ngrx/store": ["./modules/store"],
-      "@ngrx/store-devtools": ["./modules/store-devtools"],
-      "@ngrx/router-store": ["./modules/router-store"],
-      "@ngrx/entity": ["./modules/entity"],
-      "@ngrx/schematics": ["./modules/schematics"]
+      "@ngrx/effects": [
+        "./modules/effects"
+      ],
+      "@ngrx/store": [
+        "./modules/store"
+      ],
+      "@ngrx/store-devtools": [
+        "./modules/store-devtools"
+      ],
+      "@ngrx/router-store": [
+        "./modules/router-store"
+      ],
+      "@ngrx/entity": [
+        "./modules/entity"
+      ]
     }
   },
   "exclude": [

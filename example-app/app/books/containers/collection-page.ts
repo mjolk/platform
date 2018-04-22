@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { select, Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Store, select } from '@ngrx/store';
+import { Observable } from 'rxjs/Observable';
 
-import * as CollectionActions from '../actions/collection';
-import { Book } from '../models/book';
 import * as fromBooks from '../reducers';
+import * as collection from '../actions/collection';
+import { Book } from '../models/book';
 
 @Component({
   selector: 'bc-collection-page',
@@ -39,6 +39,6 @@ export class CollectionPageComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.store.dispatch(new CollectionActions.Load());
+    this.store.dispatch(new collection.Load());
   }
 }

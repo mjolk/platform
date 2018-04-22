@@ -1,12 +1,8 @@
-import { UnitTestTree } from '@angular-devkit/schematics/testing';
+import { Tree } from '@angular-devkit/schematics';
 
-export function createReducers(
-  tree: UnitTestTree,
-  path?: string,
-  project = 'bar'
-) {
+export function createReducers(tree: Tree, path?: string) {
   tree.create(
-    path || `/projects/${project}/src/app/reducers/index.ts`,
+    path || '/src/app/reducers/index.ts',
     `
     import {
       ActionReducer,

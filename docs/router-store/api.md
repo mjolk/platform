@@ -1,5 +1,4 @@
 # API
-
 ## Navigation actions
 
 Navigation actions are not provided as part of the router package. You provide your own
@@ -31,8 +30,8 @@ export class Forward implements Action {
   readonly type = FORWARD;
 }
 
-export type RouterActionsUnion =
-  | Go
+export type Actions
+  = Go
   | Back
   | Forward;
 ```
@@ -50,7 +49,6 @@ store.dispatch(new RouterActions.Back());
 
 store.dispatch(new RouterActions.Forward());
 ```
-
 ## Effects
 
 ```ts

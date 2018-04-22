@@ -1,26 +1,14 @@
-package(default_visibility = ["//visibility:public"])
+load("//tools:defaults.bzl", "ts_library")
 
-load("//tools:defaults.bzl", "ng_module", "ng_package")
-
-ng_module(
+ts_library(
     name = "entity",
     srcs = glob([
         "*.ts",
         "src/**/*.ts",
     ]),
     module_name = "@ngrx/entity",
+    visibility = ["//visibility:public"],
     deps = [
         "//modules/store",
-    ],
-)
-
-ng_package(
-    name = "npm_package",
-    srcs = glob(["**/*.externs.js"]) + [
-        "package.json",
-    ],
-    entry_point = "modules/entity/index.js",
-    deps = [
-        ":entity",
     ],
 )

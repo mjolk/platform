@@ -1,27 +1,15 @@
-package(default_visibility = ["//visibility:public"])
+load("//tools:defaults.bzl", "ts_library")
 
-load("//tools:defaults.bzl", "ng_module", "ng_package")
-
-ng_module(
+ts_library(
     name = "router-store",
     srcs = glob([
         "*.ts",
         "src/**/*.ts",
     ]),
     module_name = "@ngrx/router-store",
+    visibility = ["//visibility:public"],
     deps = [
         "//modules/store",
         "@rxjs",
-    ],
-)
-
-ng_package(
-    name = "npm_package",
-    srcs = glob(["**/*.externs.js"]) + [
-        "package.json",
-    ],
-    entry_point = "modules/router-store/index.js",
-    deps = [
-        ":router-store",
     ],
 )

@@ -179,8 +179,8 @@ export class ClearUsers implements Action {
   readonly type = UserActionTypes.CLEAR_USERS;
 }
 
-export type UserActionsUnion =
- | LoadUsers
+export type UserActions =
+ LoadUsers
  | AddUser
  | UpsertUser
  | AddUsers
@@ -196,7 +196,7 @@ export type UserActionsUnion =
 ```ts
 import { EntityState, EntityAdapter, createEntityAdapter } from '@ngrx/entity';
 import { User } from './user.model';
-import { UserActionsUnion, UserActionTypes } from './user.actions';
+import { UserActions, UserActionTypes } from './user.actions';
 
 export interface State extends EntityState<User> {
   // additional entities state properties
@@ -212,7 +212,7 @@ export const initialState: State = adapter.getInitialState({
 
 export function reducer(
   state = initialState,
-  action: UserActionsUnion
+  action: UserActions
 ): State {
   switch (action.type) {
     case UserActionTypes.ADD_USER: {

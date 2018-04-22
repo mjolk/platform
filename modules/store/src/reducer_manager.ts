@@ -1,20 +1,17 @@
-import { Inject, Injectable, OnDestroy, Provider } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-
-import { ActionsSubject } from './actions_subject';
+import { Injectable, Inject, OnDestroy, Provider } from '@angular/core';
+import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { Observable } from 'rxjs/Observable';
 import {
   Action,
   ActionReducer,
-  ActionReducerFactory,
   ActionReducerMap,
+  ActionReducerFactory,
+  MetaReducer,
   StoreFeature,
 } from './models';
-import { INITIAL_REDUCERS, INITIAL_STATE, REDUCER_FACTORY } from './tokens';
-import {
-  createFeatureReducerFactory,
-  createReducerFactory,
-  omit,
-} from './utils';
+import { INITIAL_STATE, INITIAL_REDUCERS, REDUCER_FACTORY } from './tokens';
+import { omit, createReducerFactory, createFeatureReducer } from './utils';
+import { ActionsSubject } from './actions_subject';
 
 export abstract class ReducerObservable extends Observable<
   ActionReducer<any, any>
@@ -44,7 +41,11 @@ export class ReducerManager extends BehaviorSubject<ActionReducer<any, any>>
   }: StoreFeature<any, any>) {
     const reducer =
       typeof reducers === 'function'
-        ? createFeatureReducerFactory(metaReducers)(reducers, initialState)
+        ? (state: any, action: any) =>
+            createFeatureReducer(reducers, metaReducers)(
+              state || initialState,
+              action
+            )
         : createReducerFactory(reducerFactory, metaReducers)(
             reducers,
             initialState
@@ -60,21 +61,18 @@ export class ReducerManager extends BehaviorSubject<ActionReducer<any, any>>
   addReducer(key: string, reducer: ActionReducer<any, any>) {
     this.reducers = { ...this.reducers, [key]: reducer };
 
-    this.updateReducers(key);
+    this.updateReducers();
   }
 
   removeReducer(key: string) {
     this.reducers = omit(this.reducers, key) /*TODO(#823)*/ as any;
 
-    this.updateReducers(key);
+    this.updateReducers();
   }
 
-  private updateReducers(key: string) {
+  private updateReducers() {
     this.next(this.reducerFactory(this.reducers, this.initialState));
-    this.dispatcher.next(<Action & { feature: string }>{
-      type: UPDATE,
-      feature: key,
-    });
+    this.dispatcher.next({ type: UPDATE });
   }
 
   ngOnDestroy() {

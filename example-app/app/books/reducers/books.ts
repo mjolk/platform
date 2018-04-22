@@ -1,9 +1,9 @@
 import { createSelector } from '@ngrx/store';
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { Book } from '../models/book';
-import { BookActionsUnion, BookActionTypes } from '../actions/book';
+import { BookActions, BookActionTypes } from '../actions/book';
 import {
-  CollectionActionsUnion,
+  CollectionActions,
   CollectionActionTypes,
 } from '../actions/collection';
 
@@ -19,7 +19,7 @@ export interface State extends EntityState<Book> {
 }
 
 /**
- * createEntityAdapter creates an object of many helper
+ * createEntityAdapter creates many an object of helper
  * functions for single or multiple operations
  * against the dictionary of records. The configuration
  * object takes a record id selector function and
@@ -42,7 +42,7 @@ export const initialState: State = adapter.getInitialState({
 
 export function reducer(
   state = initialState,
-  action: BookActionsUnion | CollectionActionsUnion
+  action: BookActions | CollectionActions
 ): State {
   switch (action.type) {
     case BookActionTypes.SearchComplete:

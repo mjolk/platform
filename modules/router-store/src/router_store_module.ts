@@ -1,26 +1,22 @@
 import {
-  Inject,
-  InjectionToken,
-  ModuleWithProviders,
   NgModule,
+  ModuleWithProviders,
+  InjectionToken,
+  Inject,
 } from '@angular/core';
 import {
   NavigationCancel,
   NavigationError,
-  NavigationEnd,
   Router,
   RouterStateSnapshot,
   RoutesRecognized,
 } from '@angular/router';
-import { select, Store } from '@ngrx/store';
-import { of } from 'rxjs';
-
+import { Store, select } from '@ngrx/store';
+import { of } from 'rxjs/observable/of';
 import {
   DefaultRouterStateSerializer,
   RouterStateSerializer,
-  SerializedRouterStateSnapshot,
 } from './serializer';
-
 /**
  * An action dispatched when the router navigates.
  */
@@ -37,7 +33,7 @@ export type RouterNavigationPayload<T> = {
 /**
  * An action dispatched when the router navigates.
  */
-export type RouterNavigationAction<T = SerializedRouterStateSnapshot> = {
+export type RouterNavigationAction<T = RouterStateSnapshot> = {
   type: typeof ROUTER_NAVIGATION;
   payload: RouterNavigationPayload<T>;
 };
@@ -59,7 +55,7 @@ export type RouterCancelPayload<T, V> = {
 /**
  * An action dispatched when the router cancel navigation.
  */
-export type RouterCancelAction<T, V = SerializedRouterStateSnapshot> = {
+export type RouterCancelAction<T, V = RouterStateSnapshot> = {
   type: typeof ROUTER_CANCEL;
   payload: RouterCancelPayload<T, V>;
 };
@@ -81,7 +77,7 @@ export type RouterErrorPayload<T, V> = {
 /**
  * An action dispatched when the router errors.
  */
-export type RouterErrorAction<T, V = SerializedRouterStateSnapshot> = {
+export type RouterErrorAction<T, V = RouterStateSnapshot> = {
   type: typeof ROUTER_ERROR;
   payload: RouterErrorPayload<T, V>;
 };
@@ -89,18 +85,18 @@ export type RouterErrorAction<T, V = SerializedRouterStateSnapshot> = {
 /**
  * An union type of router actions.
  */
-export type RouterAction<T, V = SerializedRouterStateSnapshot> =
+export type RouterAction<T, V = RouterStateSnapshot> =
   | RouterNavigationAction<V>
   | RouterCancelAction<T, V>
   | RouterErrorAction<T, V>;
 
-export type RouterReducerState<T = SerializedRouterStateSnapshot> = {
+export type RouterReducerState<T = RouterStateSnapshot> = {
   state: T;
   navigationId: number;
 };
 
-export function routerReducer<T = SerializedRouterStateSnapshot>(
-  state: RouterReducerState<T> | undefined,
+export function routerReducer<T = RouterStateSnapshot>(
+  state: RouterReducerState<T>,
   action: RouterAction<any, T>
 ): RouterReducerState<T> {
   switch (action.type) {
@@ -112,7 +108,7 @@ export function routerReducer<T = SerializedRouterStateSnapshot>(
         navigationId: action.payload.event.id,
       };
     default:
-      return state as RouterReducerState<T>;
+      return state;
   }
 }
 
@@ -155,7 +151,7 @@ export type StoreRouterConfigFunction = () => StoreRouterConfig;
  *
  * ```
  * export type RouterNavigationPayload = {
- *   routerState: SerializedRouterStateSnapshot,
+ *   routerState: RouterStateSnapshot,
  *   event: RoutesRecognized
  * }
  * ```
@@ -223,7 +219,7 @@ export class StoreRouterConnectingModule {
     };
   }
 
-  private routerState: SerializedRouterStateSnapshot;
+  private routerState: RouterStateSnapshot;
   private storeState: any;
   private lastRoutesRecognized: RoutesRecognized;
 
@@ -234,7 +230,7 @@ export class StoreRouterConnectingModule {
   constructor(
     private store: Store<any>,
     private router: Router,
-    private serializer: RouterStateSerializer<SerializedRouterStateSnapshot>,
+    private serializer: RouterStateSerializer<RouterStateSnapshot>,
     @Inject(ROUTER_CONFIG) private config: StoreRouterConfig
   ) {
     this.stateKey = this.config.stateKey as string;
@@ -249,9 +245,8 @@ export class StoreRouterConnectingModule {
       routerState: RouterStateSnapshot
     ) => {
       this.routerState = this.serializer.serialize(routerState);
-      if (this.shouldDispatchRouterNavigation()) {
+      if (this.shouldDispatchRouterNavigation())
         this.dispatchRouterNavigation();
-      }
       return of(true);
     };
   }
@@ -293,9 +288,6 @@ export class StoreRouterConnectingModule {
         this.dispatchRouterCancel(e);
       } else if (e instanceof NavigationError) {
         this.dispatchRouterError(e);
-      } else if (e instanceof NavigationEnd) {
-        this.dispatchTriggeredByRouter = false;
-        this.navigationTriggeredByDispatch = false;
       }
     });
   }

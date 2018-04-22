@@ -1,15 +1,7 @@
 export interface Schema {
-  /**
-   * The path to create the component.
-   */
   path?: string;
-  /**
-   * The name of the project.
-   */
-  project?: string;
-  /**
-   * The name of the component.
-   */
+  appRoot?: string;
+  sourceDir?: string;
   name: string;
   /**
    * Specifies if the style will be in the ts file.
@@ -27,6 +19,7 @@ export interface Schema {
    * Specifies the change detection strategy.
    */
   changeDetection?: 'Default' | 'OnPush';
+  routing?: boolean;
   /**
    * The prefix to apply to generated selectors.
    */
@@ -35,21 +28,13 @@ export interface Schema {
    * The file extension to be used for style files.
    */
   styleext?: string;
-  /**
-   * Specifies if a spec file is generated.
-   */
   spec?: boolean;
   /**
    * Flag to indicate if a dir is created.
    */
   flat?: boolean;
-  /**
-   * Flag to skip the module import.
-   */
+  htmlTemplate?: string;
   skipImport?: boolean;
-  /**
-   * The selector to use for the component.
-   */
   selector?: string;
   /**
    * Allows specification of the declaring module.

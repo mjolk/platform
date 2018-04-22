@@ -7,6 +7,10 @@ export default {
   globals: {
     '@angular/core': 'ng.core',
     '@ngrx/store': 'ngrx.store',
-    'rxjs': 'Rx'
+    'rxjs/Observable': 'Rx',
+    'rxjs/Subscription': 'Rx',
+    'rxjs/operator/filter': 'Rx.Observable.prototype',
+    'rxjs/operator/ignoreElements': 'Rx.Observable.prototype',
+    'rxjs/observable/merge': 'Rx.Observable'
   }
 }

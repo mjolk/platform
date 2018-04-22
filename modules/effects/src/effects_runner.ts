@@ -1,7 +1,6 @@
+import { Subscription } from 'rxjs/Subscription';
 import { Injectable, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
-
 import { EffectSources } from './effect_sources';
 
 @Injectable()

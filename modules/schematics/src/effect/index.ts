@@ -14,9 +14,10 @@ import {
   template,
   url,
 } from '@angular-devkit/schematics';
+import 'rxjs/add/operator/merge';
 import * as ts from 'typescript';
 import * as stringUtils from '../strings';
-import { addImportToModule } from '../utility/ast-utils';
+import { addProviderToModule, addImportToModule } from '../utility/ast-utils';
 import { InsertChange } from '../utility/change';
 import {
   buildRelativePath,
@@ -24,17 +25,15 @@ import {
 } from '../utility/find-module';
 import { Schema as EffectOptions } from './schema';
 import { insertImport } from '../utility/route-utils';
-import { getProjectPath } from '../utility/project';
 
 function addImportToNgModule(options: EffectOptions): Rule {
   return (host: Tree) => {
-    const modulePath = options.module;
-
-    if (!modulePath) {
+    if (!options.module) {
       return host;
     }
 
-    if (!host.exists(modulePath)) {
+    const modulePath = options.module;
+    if (!host.exists(options.module)) {
       throw new Error('Specified module does not exist');
     }
 
@@ -61,7 +60,7 @@ function addImportToNgModule(options: EffectOptions): Rule {
     );
 
     const effectsPath =
-      `/${options.path}/` +
+      `/${options.sourceDir}/${options.path}/` +
       (options.flat ? '' : stringUtils.dasherize(options.name) + '/') +
       (options.group ? 'effects/' : '') +
       stringUtils.dasherize(options.name) +
@@ -76,7 +75,9 @@ function addImportToNgModule(options: EffectOptions): Rule {
     const [effectsNgModuleImport] = addImportToModule(
       source,
       modulePath,
-      `EffectsModule.for${options.root ? 'Root' : 'Feature'}([${effectsName}])`,
+      options.root
+        ? `EffectsModule.forRoot([${effectsName}])`
+        : `EffectsModule.forFeature([${effectsName}])`,
       relativePath
     );
     const changes = [effectsModuleImport, effectsImport, effectsNgModuleImport];
@@ -93,9 +94,13 @@ function addImportToNgModule(options: EffectOptions): Rule {
 }
 
 export default function(options: EffectOptions): Rule {
-  return (host: Tree, context: SchematicContext) => {
-    options.path = getProjectPath(host, options);
+  options.path = options.path ? normalize(options.path) : options.path;
+  const sourceDir = options.sourceDir;
+  if (!sourceDir) {
+    throw new SchematicsException(`sourceDir option is required.`);
+  }
 
+  return (host: Tree, context: SchematicContext) => {
     if (options.module) {
       options.module = findModuleFromOptions(host, options);
     }
@@ -111,7 +116,8 @@ export default function(options: EffectOptions): Rule {
           ),
         ...(options as object),
         dot: () => '.',
-      } as any),
+      }),
+      move(sourceDir),
     ]);
 
     return chain([

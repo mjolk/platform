@@ -1,3 +1,4 @@
+import { normalize } from '@angular-devkit/core';
 import {
   Rule,
   SchematicContext,
@@ -11,33 +12,35 @@ import {
   filter,
   template,
   move,
+  branchAndMerge,
   mergeWith,
 } from '@angular-devkit/schematics';
 import * as ts from 'typescript';
+import * as fs from 'fs';
+import * as path from 'path';
 import * as stringUtils from '../strings';
-import { Schema as ContainerOptions } from './schema';
+import { Schema as FeatureOptions } from './schema';
 import { buildRelativePath } from '../utility/find-module';
 import { NoopChange, InsertChange, ReplaceChange } from '../utility/change';
 import { insertImport } from '../utility/route-utils';
 import { omit } from '../utility/ngrx-utils';
-import { getProjectPath } from '../utility/project';
 
-function addStateToComponent(options: ContainerOptions) {
+function addStateToComponent(options: FeatureOptions) {
   return (host: Tree) => {
     if (!options.state && !options.stateInterface) {
       return host;
     }
 
-    const statePath = `/${options.path}/${options.state}`;
+    const statePath = `/${options.sourceDir}/${options.path}/${options.state}`;
 
     if (options.state) {
       if (!host.exists(statePath)) {
-        throw new Error(`The Specified state path ${statePath} does not exist`);
+        throw new Error('Specified state path does not exist');
       }
     }
 
     const componentPath =
-      `/${options.path}/` +
+      `/${options.sourceDir}/${options.path}/` +
       (options.flat ? '' : stringUtils.dasherize(options.name) + '/') +
       stringUtils.dasherize(options.name) +
       '.component.ts';
@@ -115,12 +118,16 @@ function addStateToComponent(options: ContainerOptions) {
   };
 }
 
-export default function(options: ContainerOptions): Rule {
+export default function(options: FeatureOptions): Rule {
   return (host: Tree, context: SchematicContext) => {
-    options.path = getProjectPath(host, options);
+    const sourceDir = options.sourceDir;
+
+    if (!sourceDir) {
+      throw new SchematicsException(`sourceDir option is required.`);
+    }
 
     const opts = ['state', 'stateInterface'].reduce(
-      (current: Partial<ContainerOptions>, key) => {
+      (current: Partial<FeatureOptions>, key) => {
         return omit(current, key as any);
       },
       options
@@ -133,7 +140,8 @@ export default function(options: ContainerOptions): Rule {
         ...stringUtils,
         ...(options as object),
         dot: () => '.',
-      } as any),
+      }),
+      move(sourceDir),
     ]);
 
     return chain([

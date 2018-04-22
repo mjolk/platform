@@ -21,5 +21,4 @@ export {
 export {
   RouterStateSerializer,
   DefaultRouterStateSerializer,
-  SerializedRouterStateSnapshot,
 } from './serializer';

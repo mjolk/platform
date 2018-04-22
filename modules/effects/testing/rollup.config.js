@@ -7,6 +7,7 @@ export default {
   globals: {
     '@angular/core': 'ng.core',
     '@ngrx/effects': 'ngrx.effects',
-    'rxjs': 'Rx',
+    'rxjs/Observable': 'Rx',
+    'rxjs/observable/defer': 'Rx.Observable.defer',
   }
 }

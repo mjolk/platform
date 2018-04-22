@@ -1,8 +1,8 @@
 import {
   Action,
   ActionReducer,
-  ActionReducerFactory,
   ActionReducerMap,
+  ActionReducerFactory,
   MetaReducer,
 } from './models';
 
@@ -27,7 +27,7 @@ export function combineReducers(
   const finalReducerKeys = Object.keys(finalReducers);
 
   return function combination(state, action) {
-    state = state === undefined ? initialState : state;
+    state = state || initialState;
     let hasChanged = false;
     const nextState: any = {};
     for (let i = 0; i < finalReducerKeys.length; i++) {
@@ -73,7 +73,6 @@ export function compose<A, B, C, D, E, F>(
   c: (i: B) => C,
   b: (i: A) => B
 ): (i: A) => F;
-export function compose<A = any, F = any>(...functions: any[]): (i: A) => F;
 export function compose(...functions: any[]) {
   return function(arg: any) {
     if (functions.length === 0) {
@@ -98,20 +97,13 @@ export function createReducerFactory<T, V extends Action = Action>(
   return reducerFactory;
 }
 
-export function createFeatureReducerFactory<T, V extends Action = Action>(
+export function createFeatureReducer<T, V extends Action = Action>(
+  reducer: ActionReducer<T, V>,
   metaReducers?: MetaReducer<T, V>[]
-): (reducer: ActionReducer<T, V>, initialState?: T) => ActionReducer<T, V> {
-  const reducerFactory =
-    Array.isArray(metaReducers) && metaReducers.length > 0
-      ? compose<ActionReducer<T, V>>(...metaReducers)
-      : (r: ActionReducer<T, V>) => r;
+): ActionReducer<T, V> {
+  if (Array.isArray(metaReducers) && metaReducers.length > 0) {
+    return compose<ActionReducer<T, V>>(...metaReducers)(reducer);
+  }
 
-  return (reducer: ActionReducer<T, V>, initialState?: T) => {
-    reducer = reducerFactory(reducer);
-
-    return (state: T | undefined, action: V) => {
-      state = state === undefined ? initialState : state;
-      return reducer(state, action);
-    };
-  };
+  return reducer;
 }

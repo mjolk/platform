@@ -1,13 +1,13 @@
-import { InjectionToken, NgModule } from '@angular/core';
+import 'rxjs/add/operator/take';
 import { TestBed } from '@angular/core/testing';
+import { NgModule, InjectionToken } from '@angular/core';
 import {
+  StoreModule,
+  Store,
   ActionReducer,
   ActionReducerMap,
   combineReducers,
-  Store,
-  StoreModule,
 } from '@ngrx/store';
-import { take } from 'rxjs/operators';
 
 describe(`Store Modules`, () => {
   type RootState = { fruit: string };
@@ -109,7 +109,7 @@ describe(`Store Modules`, () => {
       store.dispatch({ type: 'fruit', payload: 'banana' });
       store.dispatch({ type: 'a', payload: 42 });
 
-      store.pipe(take(1)).subscribe((s: any) => {
+      store.take(1).subscribe((s: any) => {
         expect(s).toEqual({
           fruit: 'banana',
           a: 4,
@@ -137,7 +137,7 @@ describe(`Store Modules`, () => {
       });
 
       it('should have initial state', () => {
-        store.pipe(take(1)).subscribe((s: any) => {
+        store.take(1).subscribe((s: any) => {
           expect(s).toEqual(initialState);
         });
       });
@@ -201,7 +201,7 @@ describe(`Store Modules`, () => {
     });
 
     it('should nest the child module in the root store object', () => {
-      store.pipe(take(1)).subscribe((state: State) => {
+      store.take(1).subscribe((state: State) => {
         expect(state).toEqual({
           fruit: 'apple',
           a: 5,

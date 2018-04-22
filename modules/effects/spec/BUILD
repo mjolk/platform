@@ -12,7 +12,6 @@ ts_test_library(
         "//modules/effects",
         "//modules/store",
         "@rxjs",
-        "@rxjs//operators",
     ],
 )
 
@@ -22,5 +21,6 @@ jasmine_node_test(
         ":test_lib",
         "//modules/effects",
         "//modules/store",
+        "@rxjs",
     ],
 )

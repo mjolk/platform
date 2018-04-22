@@ -1,14 +1,9 @@
-import {
-  SchematicTestRunner,
-  UnitTestTree,
-} from '@angular-devkit/schematics/testing';
+import { Tree, VirtualTree } from '@angular-devkit/schematics';
+import { SchematicTestRunner } from '@angular-devkit/schematics/testing';
 import * as path from 'path';
+import { createAppModule, getFileContent } from '../utility/test';
 import { Schema as ReducerOptions } from './schema';
 import { createReducers } from '../utility/test/create-reducers';
-import {
-  getProjectPath,
-  createWorkspace,
-} from '../utility/test/create-workspace';
 
 describe('Reducer Schematic', () => {
   const schematicRunner = new SchematicTestRunner(
@@ -17,29 +12,22 @@ describe('Reducer Schematic', () => {
   );
   const defaultOptions: ReducerOptions = {
     name: 'foo',
-    project: 'bar',
-    // path: 'app',
+    path: 'app',
+    sourceDir: 'src',
     spec: false,
   };
 
-  const projectPath = getProjectPath();
-
-  let appTree: UnitTestTree;
+  let appTree: Tree;
 
   beforeEach(() => {
-    appTree = createReducers(createWorkspace(schematicRunner, appTree));
+    appTree = new VirtualTree();
+    appTree = createReducers(createAppModule(appTree));
   });
 
   it('should create one file', () => {
-    const tree = schematicRunner.runSchematic(
-      'reducer',
-      defaultOptions,
-      appTree
-    );
-
-    expect(
-      tree.files.indexOf(`${projectPath}/src/app/foo.reducer.ts`)
-    ).toBeGreaterThanOrEqual(0);
+    const tree = schematicRunner.runSchematic('reducer', defaultOptions);
+    expect(tree.files.length).toEqual(1);
+    expect(tree.files[0]).toEqual('/src/app/foo.reducer.ts');
   });
 
   it('should create two files if spec is true', () => {
@@ -47,45 +35,39 @@ describe('Reducer Schematic', () => {
       ...defaultOptions,
       spec: true,
     };
-    const tree = schematicRunner.runSchematic('reducer', options, appTree);
-
+    const tree = schematicRunner.runSchematic('reducer', options);
+    expect(tree.files.length).toEqual(2);
     expect(
-      tree.files.indexOf(`${projectPath}/src/app/foo.reducer.spec.ts`)
+      tree.files.indexOf('/src/app/foo.reducer.spec.ts')
     ).toBeGreaterThanOrEqual(0);
     expect(
-      tree.files.indexOf(`${projectPath}/src/app/foo.reducer.ts`)
+      tree.files.indexOf('/src/app/foo.reducer.ts')
     ).toBeGreaterThanOrEqual(0);
   });
 
   it('should create an reducer function', () => {
-    const tree = schematicRunner.runSchematic(
-      'reducer',
-      defaultOptions,
-      appTree
-    );
-    const fileContent = tree.readContent(
-      `${projectPath}/src/app/foo.reducer.ts`
-    );
-
-    expect(fileContent).toMatch(/export function reducer/);
+    const tree = schematicRunner.runSchematic('reducer', defaultOptions);
+    const fileEntry = tree.get(tree.files[0]);
+    if (fileEntry) {
+      const fileContent = fileEntry.content.toString();
+      expect(fileContent).toMatch(/export function reducer/);
+    }
   });
 
   it('should import into a specified module', () => {
     const options = { ...defaultOptions, module: 'app.module.ts' };
 
     const tree = schematicRunner.runSchematic('reducer', options, appTree);
-    const appModule = tree.readContent(`${projectPath}/src/app/app.module.ts`);
+    const appModule = getFileContent(tree, '/src/app/app.module.ts');
 
     expect(appModule).toMatch(/import \* as fromFoo from '.\/foo.reducer'/);
   });
 
-  it('should import into a specified reducers file', () => {
-    const options = { ...defaultOptions, reducers: `reducers/index.ts` };
+  it('should import into a specified reducers', () => {
+    const options = { ...defaultOptions, reducers: 'reducers/index.ts' };
 
     const tree = schematicRunner.runSchematic('reducer', options, appTree);
-    const reducers = tree.readContent(
-      `${projectPath}/src/app/reducers/index.ts`
-    );
+    const reducers = getFileContent(tree, '/src/app/reducers/index.ts');
 
     expect(reducers).toMatch(/import \* as fromFoo from '..\/foo.reducer'/);
   });
@@ -94,9 +76,7 @@ describe('Reducer Schematic', () => {
     const options = { ...defaultOptions, reducers: 'reducers/index.ts' };
 
     const tree = schematicRunner.runSchematic('reducer', options, appTree);
-    const reducers = tree.readContent(
-      `${projectPath}/src/app/reducers/index.ts`
-    );
+    const reducers = getFileContent(tree, '/src/app/reducers/index.ts');
 
     expect(reducers).toMatch(/foo\: fromFoo.State/);
   });
@@ -105,26 +85,18 @@ describe('Reducer Schematic', () => {
     const options = { ...defaultOptions, reducers: 'reducers/index.ts' };
 
     const tree = schematicRunner.runSchematic('reducer', options, appTree);
-    const reducers = tree.readContent(
-      `${projectPath}/src/app/reducers/index.ts`
-    );
+    const reducers = getFileContent(tree, '/src/app/reducers/index.ts');
 
     expect(reducers).toMatch(/foo\: fromFoo.reducer/);
   });
 
   it('should group within a "reducers" folder if group is set', () => {
-    const tree = schematicRunner.runSchematic(
-      'reducer',
-      {
-        ...defaultOptions,
-        group: true,
-      },
-      appTree
-    );
-
-    expect(
-      tree.files.indexOf(`${projectPath}/src/app/reducers/foo.reducer.ts`)
-    ).toBeGreaterThanOrEqual(0);
+    const tree = schematicRunner.runSchematic('reducer', {
+      ...defaultOptions,
+      group: true,
+    });
+    expect(tree.files.length).toEqual(1);
+    expect(tree.files[0]).toEqual('/src/app/reducers/foo.reducer.ts');
   });
 
   it('should group and nest the reducer within a feature', () => {
@@ -139,11 +111,12 @@ describe('Reducer Schematic', () => {
     const tree = schematicRunner.runSchematic('reducer', options, appTree);
     const files = tree.files;
     expect(
-      files.indexOf(`${projectPath}/src/app/reducers/foo/foo.reducer.ts`)
+      files.indexOf('/src/app/reducers/foo/foo.reducer.ts')
     ).toBeGreaterThanOrEqual(0);
 
-    const content = tree.readContent(
-      `${projectPath}/src/app/reducers/foo/foo.reducer.ts`
+    const content = getFileContent(
+      tree,
+      '/src/app/reducers/foo/foo.reducer.ts'
     );
 
     expect(content).toMatch(

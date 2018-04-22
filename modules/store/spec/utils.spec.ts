@@ -1,4 +1,4 @@
-import { omit, createFeatureReducerFactory } from '../src/utils';
+import { omit, createFeatureReducer } from '../src/utils';
 import { combineReducers, compose } from '@ngrx/store';
 
 describe(`Store utils`, () => {
@@ -74,18 +74,17 @@ describe(`Store utils`, () => {
     });
   });
 
-  describe('createFeatureReducerFactory()', () => {
-    it('should compose a reducer factory from the provided meta reducers', () => {
+  describe('createFeatureReducer()', () => {
+    it('should compose a reducer from the provided meta reducers', () => {
       const metaReducer = jasmine
         .createSpy('metaReducer')
         .and.callFake(red => (s: any, a: any) => red(s, a));
       const reducer = (state: any, action: any) => state;
 
-      const featureReducerFactory = createFeatureReducerFactory([metaReducer]);
-      const initialState = 1;
-      const featureReducer = featureReducerFactory(reducer, initialState);
+      const featureReducer = createFeatureReducer(reducer, [metaReducer]);
 
-      const state = featureReducer(undefined, <any>undefined);
+      const initialState = 1;
+      const state = featureReducer(initialState, undefined);
 
       expect(metaReducer).toHaveBeenCalled();
       expect(state).toBe(initialState);

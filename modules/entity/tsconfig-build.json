@@ -5,7 +5,6 @@
     "stripInternal": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
     "module": "es2015",
     "moduleResolution": "node",
     "noEmitOnError": false,
@@ -22,11 +21,12 @@
     "target": "es2015",
     "skipLibCheck": true
   },
-  "files": ["public_api.ts"],
+  "files": [
+    "public_api.ts"
+  ],
   "angularCompilerOptions": {
     "annotateForClosureCompiler": true,
-    // Work around for issue: https://github.com/angular/angular/issues/22210
-    "strictMetadataEmit": false,
+    "strictMetadataEmit": true,
     "flatModuleOutFile": "index.js",
     "flatModuleId": "@ngrx/entity"
   }

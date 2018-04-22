@@ -1,7 +1,6 @@
 # @ngrx/store
 
 ### Setup
-
 Create a reducer function for each data type you have in your application. The combination of these reducers will
 make up your application state:
 
@@ -34,22 +33,26 @@ To register the global state container within your application, import those red
 function in the `imports` array them in the `AppModule`.
 
 ```ts
-import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core'
 import { StoreModule } from '@ngrx/store';
 import { counter } from './counter';
 
 @NgModule({
-  imports: [BrowserModule, StoreModule.forRoot({ counter: counter })],
+  imports: [
+    BrowserModule,
+    StoreModule.forRoot({ counter: counter })
+  ]
 })
 export class AppModule {}
 ```
+
 
 You can then inject the `Store` service into your components and services. Use `store.select` to
 _select_ slice(s) of state:
 
 ```ts
 import { Store, select } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable } from 'rxjs/Observable';
 import { INCREMENT, DECREMENT, RESET } from './counter';
 
 interface AppState {
@@ -64,24 +67,24 @@ interface AppState {
     <button (click)="decrement()">Decrement</button>
 
     <button (click)="reset()">Reset Counter</button>
-  `,
+  `
 })
 class MyAppComponent {
   counter: Observable<number>;
 
-  constructor(private store: Store<AppState>) {
+  constructor(private store: Store<AppState>){
     this.counter = store.pipe(select('counter'));
   }
 
-  increment() {
+  increment(){
     this.store.dispatch({ type: INCREMENT });
   }
 
-  decrement() {
+  decrement(){
     this.store.dispatch({ type: DECREMENT });
   }
 
-  reset() {
+  reset(){
     this.store.dispatch({ type: RESET });
   }
 }
